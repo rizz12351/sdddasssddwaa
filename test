@@ -1,13 +1,17 @@
--- Place this in a LocalScript, inside StarterGui or your preferred location
+-- LocalScript: Place inside StarterPlayerScripts or StarterGui
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
 
--- Main GUI
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- GUI container
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ZinthoGUI"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+screenGui.Parent = playerGui
 
 -- Main Frame
 local mainFrame = Instance.new("Frame")
@@ -17,9 +21,9 @@ mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
+mainFrame.BackgroundTransparency = 1 -- Start fully transparent for fade-in
 mainFrame.Parent = screenGui
 
--- Smooth corners
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 10)
 corner.Parent = mainFrame
@@ -29,14 +33,14 @@ local topBar = Instance.new("Frame")
 topBar.Size = UDim2.new(1, 0, 0, 30)
 topBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 topBar.BorderSizePixel = 0
+topBar.BackgroundTransparency = 1
 topBar.Parent = mainFrame
 
--- Top Bar Corners
 local topCorner = Instance.new("UICorner")
 topCorner.CornerRadius = UDim.new(0, 10)
 topCorner.Parent = topBar
 
--- Title
+-- Title Text
 local title = Instance.new("TextLabel")
 title.Text = "Zintho   Hub, Made by Zintho"
 title.Font = Enum.Font.SourceSansBold
@@ -48,7 +52,7 @@ title.Size = UDim2.new(1, -30, 1, 0)
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = topBar
 
--- Close Button (X)
+-- Close Button
 local closeButton = Instance.new("TextButton")
 closeButton.Text = "X"
 closeButton.Font = Enum.Font.SourceSansBold
@@ -59,19 +63,29 @@ closeButton.Size = UDim2.new(0, 30, 1, 0)
 closeButton.Position = UDim2.new(0, 0, 0, 0)
 closeButton.Parent = topBar
 
--- Bottom Drag Bar
+-- Hover effect
+closeButton.MouseEnter:Connect(function()
+	TweenService:Create(closeButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+end)
+
+closeButton.MouseLeave:Connect(function()
+	TweenService:Create(closeButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 0, 0)}):Play()
+end)
+
+-- Bottom Drag Handle
 local dragBar = Instance.new("Frame")
 dragBar.Size = UDim2.new(0.2, 0, 0, 5)
 dragBar.Position = UDim2.new(0.4, 0, 1, -5)
 dragBar.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
 dragBar.BorderSizePixel = 0
+dragBar.BackgroundTransparency = 1
 dragBar.Parent = mainFrame
 
 local dragCorner = Instance.new("UICorner")
 dragCorner.CornerRadius = UDim.new(1, 0)
 dragCorner.Parent = dragBar
 
--- Enable drag from the bottom bar too
+-- Drag logic from bottom bar
 local dragging, dragInput, dragStart, startPos
 
 local function update(input)
@@ -109,9 +123,19 @@ UserInputService.InputChanged:Connect(function(input)
 	end
 end)
 
--- Close button functionality
+-- Close logic
 closeButton.MouseButton1Click:Connect(function()
-	TweenService:Create(mainFrame, TweenInfo.new(0.3), {Transparency = 1, BackgroundTransparency = 1}):Play()
+	local fadeOut = TweenService:Create(mainFrame, TweenInfo.new(0.3), {BackgroundTransparency = 1})
+	local fadeTop = TweenService:Create(topBar, TweenInfo.new(0.3), {BackgroundTransparency = 1})
+	local fadeDrag = TweenService:Create(dragBar, TweenInfo.new(0.3), {BackgroundTransparency = 1})
+	fadeOut:Play()
+	fadeTop:Play()
+	fadeDrag:Play()
 	wait(0.3)
 	screenGui:Destroy()
 end)
+
+-- Fade-in animation
+TweenService:Create(mainFrame, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
+TweenService:Create(topBar, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
+TweenService:Create(dragBar, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
